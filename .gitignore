@@ -1,0 +1,28 @@
+# Unity - Fichiers générés automatiquement
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# Visual Studio / VSCode
+.vs/
+.vscode/
+*.csproj
+*.sln
+*.suo
+*.user
+
+# Unity
+*.unitypackage
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+
+# Fichiers temporaires
+.DS_Store
+Thumbs.db
