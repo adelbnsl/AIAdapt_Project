@@ -22,6 +22,18 @@ public class DoorController : MonoBehaviour
             transform.position,
             joueur.position
         );
+        if (fearManager.niveauPeur < 0.3f)
+        {
+            vitesseOuverture = 30f;
+        }
+        else if (fearManager.niveauPeur < 0.7f)
+        {
+            vitesseOuverture = 60f; 
+        }
+        else
+        {
+            vitesseOuverture = 90f;
+        }
         if (distance <= distanceInteraction && Input.GetKeyDown(KeyCode.E))
         {
             Debug.Log("Le joueur intéragit la porte.");
