@@ -15,17 +15,23 @@ public class AudioController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        float volumeCible;
         if (fearManager.niveauPeur < 0.3f)
         {
-            audioSource.volume = 0.8f;
+            volumeCible = 0.8f;
         }
         else if (fearManager.niveauPeur < 0.7f)
         {
-            audioSource.volume = 0.5f;
+            volumeCible = 0.5f;
         }
         else
         {
-            audioSource.volume = 0.2f;
+            volumeCible = 0.2f;
         }
+        audioSource.volume = Mathf.MoveTowards(
+            audioSource.volume,
+            volumeCible,
+            0.2f * Time.deltaTime
+        );
     }
 }

@@ -24,7 +24,7 @@ public class DoorController : MonoBehaviour
         );
         if (fearManager.niveauPeur < 0.3f)
         {
-            vitesseOuverture = 30f;
+            vitesseOuverture = 90f;
         }
         else if (fearManager.niveauPeur < 0.7f)
         {
@@ -32,7 +32,7 @@ public class DoorController : MonoBehaviour
         }
         else
         {
-            vitesseOuverture = 90f;
+            vitesseOuverture = 30f;
         }
         if (distance <= distanceInteraction && Input.GetKeyDown(KeyCode.E))
         {

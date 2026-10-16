@@ -37,11 +37,11 @@ public class LightController : MonoBehaviour
             chronometre = 0f;
             if (fearManager.niveauPeur < seuilPeurFaible)
             {
-                intervalle = Random.Range(2f,4f);
+                intervalle = Random.Range(0.5f,1.5f);
             }
             else
             {
-                intervalle = Random.Range(0.5f, 1.5f);
+                intervalle = Random.Range(2f, 4f);
             }
         }        
     }

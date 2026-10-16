@@ -10,18 +10,30 @@ public class SilhouetteController : MonoBehaviour
     private float tempsVisible = 0f;
     private bool silhouetteVisible = false;
     public float delaiReapparition = 5f;
+
+    private float variationAleatoire = 0f;
+    private float tempsInvisible = 0f;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
        silhouette.SetActive(false); 
-       Invoke(nameof(FaireApparaitre), 5f); 
+       variationAleatoire = Random.Range(0f,1f);
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (fearManager.niveauPeur >= 0.7f)
+        {
+            if (silhouetteVisible)
+            {
+                FaireDisparaitre();
+            }
+            return; 
+        }
         if (silhouetteVisible)
         {
+
             if(fearManager.niveauPeur < 0.3f)
             {
                 dureeApparition = 4f;
@@ -36,11 +48,31 @@ public class SilhouetteController : MonoBehaviour
             }
             tempsVisible += Time.deltaTime;
 
-            Debug.Log("Temps visible : " + tempsVisible + " | Durée autorisée : " + dureeApparition);
+            //Debug.Log("Temps visible : " + tempsVisible + " | Durée autorisée : " + dureeApparition);
 
             if (tempsVisible >= dureeApparition)
             {
                 FaireDisparaitre();
+            }
+        }
+        else
+        {
+            if(fearManager.niveauPeur < 0.3f)
+            {
+                delaiReapparition = Mathf.Lerp(4f,7f,variationAleatoire);
+            }
+            else if(fearManager.niveauPeur < 0.7f)
+            {
+                delaiReapparition = Mathf.Lerp(9f,13f,variationAleatoire);
+            }
+            else
+            {
+                delaiReapparition = Mathf.Lerp(18f,25f,variationAleatoire);
+            }
+            tempsInvisible += Time.deltaTime;
+            if (tempsInvisible >= delaiReapparition)
+            {
+                FaireApparaitre();
             }
         }
     }
@@ -65,10 +97,12 @@ public class SilhouetteController : MonoBehaviour
     void FaireDisparaitre()
     {
 
-        Debug.Log("Disparition : peur = " + fearManager.niveauPeur + " | temps visible = " + tempsVisible + " | durée autorisée = " + dureeApparition);
+        //Debug.Log("Disparition : peur = " + fearManager.niveauPeur + " | temps visible = " + tempsVisible + " | durée autorisée = " + dureeApparition);
 
         silhouette.SetActive(false);
         silhouetteVisible = false;
-        Invoke(nameof(FaireApparaitre), delaiReapparition); 
+        tempsInvisible = 0f;
+        variationAleatoire = Random.Range(0f,1f);
+         
     }
 }
