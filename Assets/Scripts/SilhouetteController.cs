@@ -11,6 +11,9 @@ public class SilhouetteController : MonoBehaviour
     private bool silhouetteVisible = false;
     public float delaiReapparition = 5f;
 
+    [Range(0f,1f)]
+    public float augmentationPeur = 0.2f;
+
     private float variationAleatoire = 0f;
     private float tempsInvisible = 0f;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -93,6 +96,7 @@ public class SilhouetteController : MonoBehaviour
         tempsVisible = 0f;
         silhouetteVisible = true;
         silhouette.SetActive(true);
+        fearManager.AugmenterPeur(augmentationPeur);
     }
     void FaireDisparaitre()
     {
