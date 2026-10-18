@@ -4,6 +4,8 @@ public class SoundEventController : MonoBehaviour
 {
     private AudioSource audioSource;
     public FearManager fearManager;
+
+    public LightController lightController;
     [Range(0f, 1f)]
     public float augmentationPeur = 0.2f;
 
@@ -38,6 +40,7 @@ public class SoundEventController : MonoBehaviour
             if (chronometre >= prochainDeclanchement)
                 {
                     audioSource.Play();
+                    lightController.DeclencherClignotment();
                     fearManager.AugmenterPeur(augmentationPeur);
 
                     chronometre = 0f;

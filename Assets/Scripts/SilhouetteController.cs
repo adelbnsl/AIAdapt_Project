@@ -14,6 +14,8 @@ public class SilhouetteController : MonoBehaviour
     [Range(0f,1f)]
     public float augmentationPeur = 0.2f;
 
+    public Transform joueur;
+    public float distanceDisparition = 3f;
     private float variationAleatoire = 0f;
     private float tempsInvisible = 0f;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -78,9 +80,33 @@ public class SilhouetteController : MonoBehaviour
                 FaireApparaitre();
             }
         }
+        if (silhouette.activeSelf && joueur != null)
+        {
+            float distance = Vector3.Distance(
+                joueur.position,
+                silhouette.transform.position
+            );
+            if (distance <= distanceDisparition)
+            {
+                FaireDisparaitre();
+                Debug.Log("Silhouette disparue : joueur trop proche.");
+            }
+        }
     }
     void FaireApparaitre()
     {
+        if (joueur != null)
+        {
+            float distance = Vector3.Distance(
+                joueur.position,
+                silhouette.transform.position
+            );
+            if (distance <= distanceDisparition)
+            {
+                tempsInvisible = 0f;
+                return;
+            }
+        }
         if (fearManager.niveauPeur < 0.3f)
         {
             dureeApparition = 4f;
@@ -93,6 +119,7 @@ public class SilhouetteController : MonoBehaviour
         {
             dureeApparition = 1f;
         }
+        Debug.Log("Délai réel avant réapparition : " + tempsInvisible.ToString("F2") + " secondes");
         tempsVisible = 0f;
         silhouetteVisible = true;
         silhouette.SetActive(true);
@@ -105,6 +132,7 @@ public class SilhouetteController : MonoBehaviour
 
         silhouette.SetActive(false);
         silhouetteVisible = false;
+        tempsVisible = 0f;
         tempsInvisible = 0f;
         variationAleatoire = Random.Range(0f,1f);
          

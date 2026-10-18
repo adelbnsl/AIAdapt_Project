@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class LightController : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class LightController : MonoBehaviour
 
     private float chronometre = 0f;
     private bool lampeAllumee = true; 
+    private bool clignotementEvenementiel = false;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -22,6 +24,10 @@ public class LightController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (clignotementEvenementiel)
+        {
+            return;
+        }
         if(fearManager.niveauPeur >= seuilPeurElevee)
         {
             lampe.intensity = intensiteNormale;
@@ -44,5 +50,21 @@ public class LightController : MonoBehaviour
                 intervalle = Random.Range(2f, 4f);
             }
         }        
+    }
+    public void DeclencherClignotment()
+    {
+        if (!clignotementEvenementiel)
+        {
+            StartCoroutine(ClignotementPonctuel());
+        }
+    }
+    IEnumerator ClignotementPonctuel()
+    {
+        clignotementEvenementiel = true;
+        float intensiteInitiale = lampe.intensity;
+        lampe.intensity = 0f;
+        yield return new WaitForSeconds(0.2f);
+        lampe.intensity = intensiteInitiale;
+        clignotementEvenementiel = false;
     }
 }

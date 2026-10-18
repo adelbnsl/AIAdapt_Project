@@ -57,4 +57,10 @@ public class DoorController : MonoBehaviour
         );
 
     }
+    public void FermerPorte()
+    {
+        porteOuverte = false;
+        angleCible = 0f;
+        pivotPorte.localRotation = Quaternion.Euler(0f, 0f, 0f);
+    }
 }
