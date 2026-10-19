@@ -9,6 +9,7 @@ public class CouloirLoopController : MonoBehaviour
     public Light lampeCouloir;
     public GameObject objetHorreur;
     public DoorController porte;
+    public PortraitController portraitController;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -33,9 +34,14 @@ public class CouloirLoopController : MonoBehaviour
             joueur.position = pointRetour.position;
             joueur.rotation = pointRetour.rotation;
             nombresBoucles++;
+            Debug.Log("BOUCLE DETECTEE : " + nombresBoucles);
             if (porte != null)
             {
                 porte.FermerPorte();
+            }
+            if (portraitController != null)
+            {
+                portraitController.ChangerPortrait(nombresBoucles);
             }
             Debug.Log("Boucle numéro : " + nombresBoucles);
             if (fearManager.niveauPeur < 0.3f)
