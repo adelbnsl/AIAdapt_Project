@@ -45,7 +45,7 @@ public class PlayerLook : MonoBehaviour
         rotationY -= sourisY;
 
         // Limite la rotation verticale entre -90 et 90 degrés. Empêche le joueur de faire tourner la caméra complètement sur elle-même verticalement.
-        rotationX = Mathf.Clamp(rotationY, -90f, 90f);
+        rotationY = Mathf.Clamp(rotationY, -90f, 90f);
 
         // Applique la rotation verticale uniquement à la caméra autour de son axe local Y.
         transform.localRotation = Quaternion.Euler(rotationY, 0f, 0f);
