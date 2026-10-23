@@ -4,11 +4,18 @@ public class SilhouetteController : MonoBehaviour
 {
     public GameObject silhouette;
     public FearManager fearManager;
+    public Transform[] positionsApparition;
 
     public float dureeApparition = 3f; 
 
     private float tempsVisible = 0f;
     private bool silhouetteVisible = false;
+    private bool silhouetteDejaVue = false;
+    private bool disparitionAuDetournement = false;
+    public float vitesseDeplacement = 2.5f;
+    public float distanceArret = 3.5f;
+    public LayerMask couchesObstacles;
+    private bool silhouetteMobile = false;
     public float delaiReapparition = 5f;
 
     [Range(0f,1f)]
@@ -16,6 +23,7 @@ public class SilhouetteController : MonoBehaviour
 
     public Transform joueur;
     public float distanceDisparition = 3f;
+    public Transform cameraJoueur;
     private float variationAleatoire = 0f;
     private float tempsInvisible = 0f;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -38,6 +46,16 @@ public class SilhouetteController : MonoBehaviour
         }
         if (silhouetteVisible)
         {
+            if (JoueurRegardeSilhouette())
+            {
+                silhouetteDejaVue = true;
+            } 
+            else if (silhouetteDejaVue && disparitionAuDetournement)
+            {
+                FaireDisparaitre();
+                return;
+            } 
+            DeplacerSilhouette();
 
             if(fearManager.niveauPeur < 0.3f)
             {
@@ -95,6 +113,15 @@ public class SilhouetteController : MonoBehaviour
     }
     void FaireApparaitre()
     {
+        if (positionsApparition != null && positionsApparition.Length > 0)
+        {
+            int indexAleatoire = Random.Range(0, positionsApparition.Length);
+            Transform pointChoisi = positionsApparition[indexAleatoire];
+            if (pointChoisi != null)
+            {
+                silhouette.transform.position = pointChoisi.position;
+            }
+        }
         if (joueur != null)
         {
             float distance = Vector3.Distance(
@@ -121,9 +148,66 @@ public class SilhouetteController : MonoBehaviour
         }
         Debug.Log("Délai réel avant réapparition : " + tempsInvisible.ToString("F2") + " secondes");
         tempsVisible = 0f;
+        silhouetteDejaVue = false;
+        disparitionAuDetournement = Random.value < 0.7f;
+        silhouetteMobile = false;
+        if (!disparitionAuDetournement)
+        {
+            if (fearManager.niveauPeur < 0.3f)
+            {
+                silhouetteMobile = Random.value < 0.6f;
+            }
+            else if (fearManager.niveauPeur < 0.7f)
+            {
+                silhouetteMobile = Random.value < 0.3f;
+            }
+        }
         silhouetteVisible = true;
         silhouette.SetActive(true);
         fearManager.AugmenterPeur(augmentationPeur);
+    }
+    void DeplacerSilhouette()
+    {
+        if (!silhouetteMobile || joueur == null)
+        {
+            return;
+        }
+        if (JoueurRegardeSilhouette())
+        {
+            return;
+        }
+        Vector3 direction = joueur.position - silhouette.transform.position;
+        direction.y = 0f;
+        float distance = direction.magnitude;
+        if (distance > distanceArret)
+        {
+            Vector3 directionNormalisee = direction.normalized;
+            Vector3 origineRayon = silhouette.transform.position + Vector3.up * 0.5f;
+            bool obstacleDevant = Physics.Raycast(
+                origineRayon,
+                directionNormalisee,
+                0.7f,
+               couchesObstacles,
+               QueryTriggerInteraction.Ignore
+            );
+            if (!obstacleDevant)
+            {
+                silhouette.transform.position += directionNormalisee * vitesseDeplacement * Time.deltaTime;
+            }
+        } 
+    }
+    bool JoueurRegardeSilhouette()
+    {
+        if (cameraJoueur == null || silhouette == null)
+        {
+            return false;
+        }
+        Vector3 directionSilhouette = silhouette.transform.position - cameraJoueur.position;
+        float angle = Vector3.Angle(
+            cameraJoueur.forward,
+            directionSilhouette
+        );
+        return angle < 45f;
     }
     void FaireDisparaitre()
     {

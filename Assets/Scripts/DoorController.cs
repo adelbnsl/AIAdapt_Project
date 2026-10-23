@@ -8,6 +8,7 @@ public class DoorController : MonoBehaviour
     public FearManager fearManager;
     private bool porteOuverte = false;
     public float vitesseOuverture = 60f;
+    public float angleOuverture = -90f;
     private float angleCible = 0f;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -39,7 +40,7 @@ public class DoorController : MonoBehaviour
             Debug.Log("Le joueur intéragit la porte.");
             if (porteOuverte == false)
             {
-                angleCible = 90f;
+                angleCible = angleOuverture;
                 porteOuverte = true;
             }
             else
@@ -62,5 +63,11 @@ public class DoorController : MonoBehaviour
         porteOuverte = false;
         angleCible = 0f;
         pivotPorte.localRotation = Quaternion.Euler(0f, 0f, 0f);
+    }
+    public void OuvrirPorte()
+    {
+        porteOuverte = false;
+        angleCible = angleOuverture;
+        pivotPorte.localRotation = Quaternion.Euler(0f, angleOuverture, 0f);
     }
 }

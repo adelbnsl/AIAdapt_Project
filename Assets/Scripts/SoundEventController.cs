@@ -4,6 +4,9 @@ public class SoundEventController : MonoBehaviour
 {
     private AudioSource audioSource;
     public FearManager fearManager;
+    public AudioSource audioSourceDerriere;
+    public AudioClip sonPas;
+    public AudioClip sonChuchotement;
 
     public LightController lightController;
     [Range(0f, 1f)]
@@ -39,8 +42,7 @@ public class SoundEventController : MonoBehaviour
             chronometre += Time.deltaTime;
             if (chronometre >= prochainDeclanchement)
                 {
-                    audioSource.Play();
-                    lightController.DeclencherClignotment();
+                    JouerEvenementSonore();
                     fearManager.AugmenterPeur(augmentationPeur);
 
                     chronometre = 0f;
@@ -72,6 +74,45 @@ public class SoundEventController : MonoBehaviour
         else
         {
             return 2;
+        }
+    }
+    void PositionnerSonDerriereJoueur()
+    {
+        if (audioSourceDerriere == null)
+        {
+            return;
+        }
+        float postitionX = Random.Range(-2f, 2f);
+        float positionZ = Random.Range(-4f, -1.5f);
+        audioSourceDerriere.transform.localPosition = new Vector3(
+            postitionX,
+            0f,
+            positionZ
+        );
+    }
+    void JouerEvenementSonore()
+    {
+        int evenement = Random.Range(0, 3);
+        if (evenement == 0)
+        {
+            audioSource.Play();
+            lightController.DeclencherClignotment();
+        }
+        else if (evenement == 1)
+        {
+            if (sonPas != null && audioSourceDerriere != null)
+            {
+                PositionnerSonDerriereJoueur();
+                audioSourceDerriere.PlayOneShot(sonPas);
+            }
+        }
+        else
+        {
+            if (sonChuchotement != null && audioSourceDerriere != null)
+            {
+                PositionnerSonDerriereJoueur();
+                audioSourceDerriere.PlayOneShot(sonChuchotement);
+            }
         }
     }
 }
