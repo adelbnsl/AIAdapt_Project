@@ -15,13 +15,14 @@ using UnityEngine;
 public class PlayerLook : MonoBehaviour
 {
     // Sensibilité de la souris. Détermine la vitesse de rotation de la caméra et du personnage selon les mouvement de la souris.
-    public float sensibilite = 150f;
+    public float sensibilite = 2f;
 
     // Référence au corps du joueur. Utilisée pour effectuer la rotation horizontale de l'ensemble du personnage.
     public Transform playerBody;
 
     // Stock l'angle de rotation verticale de la caméra. Initialisé à 0 degré.
-    private float rotationY = 0f;
+    private float rotationY;
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -36,16 +37,16 @@ public class PlayerLook : MonoBehaviour
     void Update()
     {
         // Récupère le mouvement horizontal de la souris. La sensibilité ajuste l'amplitude de la rotation. Time.deltaTime est appliqué au calcul.
-        float sourisX = Input.GetAxis("Mouse X") * sensibilite * Time.deltaTime;
+        float sourisX = Input.GetAxis("Mouse X") * sensibilite;
 
         // Récupère le mouvement verticale de la souris.
-        float sourisY = Input.GetAxis("Mouse Y") * sensibilite * Time.deltaTime;
+        float sourisY = Input.GetAxis("Mouse Y") * sensibilite;
 
         // Met à jour l'angle verticale de la caméra. La soustraction permet d'orienter la caméra vers le haut quand la souris monte.
         rotationY -= sourisY;
 
         // Limite la rotation verticale entre -90 et 90 degrés. Empêche le joueur de faire tourner la caméra complètement sur elle-même verticalement.
-        rotationX = Mathf.Clamp(rotationY, -90f, 90f);
+        rotationY = Mathf.Clamp(rotationY, -90f, 90f);
 
         // Applique la rotation verticale uniquement à la caméra autour de son axe local Y.
         transform.localRotation = Quaternion.Euler(rotationY, 0f, 0f);

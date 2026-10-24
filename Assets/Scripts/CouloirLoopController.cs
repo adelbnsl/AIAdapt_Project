@@ -22,7 +22,7 @@ public class CouloirLoopController : MonoBehaviour
     public Transform pointRetour;
 
     // Compteur du nombre de boucles effectuées. Initialisé à 0 au démarrage du jeu.
-    public int nombresBoucles = 0;
+    public int nombresBoucles;
 
     // Référence au gestionnaire du niveau de peur.
     public FearManager fearManager;
@@ -44,139 +44,70 @@ public class CouloirLoopController : MonoBehaviour
 
     // Contrôleur permettant de modifier la position de la chaise horrifique à chaque boucle.
     public ObjetMobileController chaiseHorreur;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    
     
     //  Appelée automatiquement par Unity lorsqu'un Collider entre dans la zone Trigger associée à cet objet.
     void OnTriggerEnter(Collider other)
     {
+        if (other.transform != joueur) return;
+        
+        CharacterController controller = joueur.GetComponent<CharacterController>();
+        // Désactive temporairement le CharacterController pour permettre la téléportation sans interférence avec la gestion des collisions.
+        if (controller != null) controller.enabled = false;
+        
+        
+        // Téléporte le joueur au début du couloir et restaure l'orientation définie au point de retour.
+        joueur.position = pointRetour.position;
+        joueur.rotation = pointRetour.rotation;
+        
+        nombresBoucles++;
+        Debug.Log("Boucle numéro : " + nombresBoucles);
+        
+        
+        if (porte != null) porte.FermerPorte();
+        if (porteEntree != null) porteEntree.OuvrirPorte();
+        if (portraitController != null) portraitController.ChangerPortrait(nombresBoucles);
+        if (chaiseHorreur != null) chaiseHorreur.ChangerPosition(nombresBoucles);
+        
+        // Niveau de peur lu UNE seule fois pour que toutes les décisions soient cohérentes.
+        float peur = (fearManager != null) ? fearManager.niveauPeur : 0f;
+        
+        // ADAPTATION DE LA COULEUR DE L'ÉCLAIRAGE EN FONCTION DU NIVEAU DE PEUR.
+        
         // Vérifie que l'objet entrant dans la zone correspond bien au joueur.
         if (other.transform == joueur)
-        {
-            // Récupère le CharacterController du joueur.
-            CharacterController controller = joueur.GetComponent<CharacterController>();
-
-            // Désactive temporairement le CharacterController pour permettre la téléportation sans interférence avec la gestion des collisions.
-            if (controller != null)
+            // Couleur de la lampe.
+            if (lampeCouloir != null)
             {
-                controller.enabled = false;
-            }
-
-            // Téléporte le joueur au début du couloir et restaure l'orientation définie au point de retour.
-            joueur.position = pointRetour.position;
-            joueur.rotation = pointRetour.rotation;
-
-            // Incrémente le compteur de boucles.
-            nombresBoucles++;
-            Debug.Log("BOUCLE DETECTEE : " + nombresBoucles);
-
-            // Referle instantanément la porte de sortie.
-            if (porte != null)
-            {
-                porte.FermerPorte();
-            }
-
-            // Ouvre instantanément la porte d'entrée.
-            if (porteEntree != null)
-            {
-                porteEntree.OuvrirPorte();
-            }
-
-            // Demande au contrôler du portrait de modifier son apparence selon le nombre de boucles.
-            if (portraitController != null)
-            {
-                portraitController.ChangerPortrait(nombresBoucles);
-            }
-
-            // Demande au contrôler de la chaise de modifier sa position selon le nombre de boucles.
-            if (chaiseHorreur != null)
-            {
-                chaiseHorreur.ChangerPosition(nombresBoucles);
-            }
-            Debug.Log("Boucle numéro : " + nombresBoucles);
-
-            // ADAPTATION DE LA COULEUR DE L'ÉCLAIRAGE EN FONCTION DU NIVEAU DE PEUR.
-            // PEUR FAIBLE : L'environnement devient progressivement plus inquiétant au fil des boucles. 
-            if (fearManager.niveauPeur < 0.3f)
-            {
-                Debug.Log("Peur faible : évènements horrifiques renforcées");
-
-                // 1ère boucle : éclairage légérement orangé.
-                if (nombresBoucles == 1)
+                // PEUR FAIBLE : L'environnement devient progressivement plus inquiétant au fil des boucles. 
+                if (peur < 0.3f)
                 {
-                    lampeCouloir.color = new Color(1f, 0.8f, 0.6f);
+                    lampeCouloir.color = (nombresBoucles == 1)
+                        ? new Color(1f, 0.8f, 0.6f)   // 1ère boucle : orangé
+                        : new Color(1f, 0.3f, 0.2f);  // ensuite : rougeâtre
                 }
-
-                // A partir de la 2nde boucle : éclairage rougeâtre plus inquiétant.
-                else if (nombresBoucles >= 2)
-                {
-                    lampeCouloir.color = new Color(1f, 0.3f, 0.2f);
-                }
-            }
-
-            // PEUR MOYENNE : L'éclairage devient jaune afin de conserver une ambiance inquiétante mais modérée.
-            else if (fearManager.niveauPeur < 0.7f)
-            {
-                Debug.Log("Peur moyenne : évènements horrifiques modérés");
-                lampeCouloir.color = new Color(1f, 0.9f, 0.2f);
-            }
-
-            // PEUR ÉLEVÉE : L'éclairage devient blanc afin de réduire l'intensité visuelle de l'environnement.
-            else
-            {
-                Debug.Log("Peur élevée : évènements horrifiques réduits");
-                lampeCouloir.color = Color.white;
-            }
-
-            // GESTION DE L'APPARITION DE L'OBJET HORRIFIQUE.
-            // A partir de la 1ère boucle :
-            if (nombresBoucles >= 1)
-            {
-                // Proba d'appartition de l'objet horrifique.
-                float probabiliteApparition;
-
-                // PEUR FAIBLE : 80% de chances de faire apparaître l'objet.
-                if (fearManager.niveauPeur < 0.3f)
-                {
-                    probabiliteApparition = 0.8f;
-                }
-
-                // PEUR MOYENNE : 40% de chances de faire apparaître l'objet.
-                else if (fearManager.niveauPeur < 0.7f)
-                {
-                    probabiliteApparition = 0.4f;
-                }
-
-                // PEUR ÉLEVÉE : L'objet ne doit pas apparaître. 
-                else
-                {
-                    probabiliteApparition = 0f;
-                }
-
-                // Génère une valeur aléatoire entre 0 et 1 et la compare à la proba d'apparition.
-                bool apparition = Random.value < probabiliteApparition;
-
-                // Active ou non l'objet horrifique selon le résultat du tirage précedant. 
-                objetHorreur.SetActive(apparition);
+                
+                // PEUR MOYENNE : L'éclairage devient jaune afin de conserver une ambiance inquiétante mais modérée.
+                else if (peur < 0.7f) lampeCouloir.color = new Color(1f, 0.9f, 0.2f);
+                // PEUR ÉLEVÉE : L'éclairage devient blanc afin de réduire l'intensité visuelle de l'environnement.
+                else lampeCouloir.color = Color.white;
             }
             
-            //  Réactive le CharacterController après la téléportation et les modification du couloir.
-            if (controller != null)
-            {
-                controller.enabled = true;
-            }
-            Debug.Log("Joueur téléporté au début du couloir.");
-
+        
+        // GESTION DE L'APPARITION DE L'OBJET HORRIFIQUE.
+        if (objetHorreur != null)
+        {
+            float probabiliteApparition;
+            if (peur < 0.3f) probabiliteApparition = 0.8f; // PEUR FAIBLE : 80% de chances de faire apparaître l'objet.
+            else if (peur < 0.7f) probabiliteApparition = 0.4f; // PEUR MOYENNE : 40% de chances de faire apparaître l'objet.
+            else probabiliteApparition = 0f; // PEUR ÉLEVÉE : L'objet ne doit pas apparaître.
+ 
+            objetHorreur.SetActive(Random.value < probabiliteApparition);
         }
+        
+        
+        
+        //  Réactive le CharacterController après la téléportation et les modification du couloir.
+        if (controller != null) controller.enabled = true;
     }
 }

@@ -31,16 +31,16 @@ public class SilhouetteController : MonoBehaviour
     public float dureeApparition = 3f; 
 
     // Temps écoulé depuis l'apparition de la silhouette.
-    private float tempsVisible = 0f;
+    private float tempsVisible;
 
     // Indique si la silhouette est actuellement visible.
-    private bool silhouetteVisible = false;
+    private bool silhouetteVisible;
 
     // Indique si le joueur a déjà regardé la silhouette depuis sa dernière apparition.
-    private bool silhouetteDejaVue = false;
+    private bool silhouetteDejaVue;
 
     // Détermine si la silhouette doit disparaître lorsque le joueur détourne son regard.
-    private bool disparitionAuDetournement = false;
+    private bool disparitionAuDetournement;
 
     //Vitesse de déplacement de la silhouette vers le joueur.
     public float vitesseDeplacement = 2.5f;
@@ -52,7 +52,7 @@ public class SilhouetteController : MonoBehaviour
     public LayerMask couchesObstacles;
 
     // Indique si la silhouette peut se déplacer pendant son apparition actuelle.
-    private bool silhouetteMobile = false;
+    private bool silhouetteMobile;
 
     // Délai à attendre avant une nouvelle apparition.
     public float delaiReapparition = 5f;
@@ -71,10 +71,10 @@ public class SilhouetteController : MonoBehaviour
     public Transform cameraJoueur;
 
     // Valeur aléatoire utilisée pour calculer les délais de réaparition.
-    private float variationAleatoire = 0f;
+    private float variationAleatoire;
 
     // Temps écoulé depuis la dernière disparition.
-    private float tempsInvisible = 0f;
+    private float tempsInvisible;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -191,35 +191,21 @@ public class SilhouetteController : MonoBehaviour
     // Gère l'apparition de la silhouette : position, durée de visibilité, comportement aléatoire et augmentation de la peur.
     void FaireApparaitre()
     {
-        // Vérifie que des positions d'apparition existant.
+        Vector3 positionChoisie = silhouette.transform.position;
+        
         if (positionsApparition != null && positionsApparition.Length > 0)
         {
-            // Sélectionne une position aléatoire dans la liste.
-            int indexAleatoire = Random.Range(0, positionsApparition.Length);
-            Transform pointChoisi = positionsApparition[indexAleatoire];
-
-            // Place la silhouette à la position sélectionnée.
-            if (pointChoisi != null)
-            {
-                silhouette.transform.position = pointChoisi.position;
-            }
+            Transform pointChoisi = positionsApparition[Random.Range(0, positionsApparition.Length)];
+            if (pointChoisi != null) positionChoisie = pointChoisi.position;
         }
-        
-        // Vérifie que la silhouette n'apparaît pas trop près du joueur. 
-        if (joueur != null)
+ 
+        // On teste la distance AVANT de déplacer la silhouette.
+        if (joueur != null && Vector3.Distance(joueur.position, positionChoisie) <= distanceDisparition)
         {
-            float distance = Vector3.Distance(
-                joueur.position,
-                silhouette.transform.position
-            );
-
-            // Si la position est trop proche, l'apparition est annulée et le temps d'attente est réinitialisé.
-            if (distance <= distanceDisparition)
-            {
-                tempsInvisible = 0f;
-                return;
-            }
+            tempsInvisible = 0f;
+            return;
         }
+        silhouette.transform.position = positionChoisie;
 
         // Détermine la durée d'apparition en fonction du niveau de peur.
         if (fearManager.niveauPeur < 0.3f)
@@ -313,7 +299,7 @@ public class SilhouetteController : MonoBehaviour
             // Si aucun obstacle n'est détecté, déplace la silhouette vers le joueur.
             if (!obstacleDevant)
             {
-                silhouette.transform.position += directionNormalisee * vitesseDeplacement * Time.deltaTime;
+                silhouette.transform.position += directionNormalisee * (vitesseDeplacement * Time.deltaTime);
             }
         } 
     }

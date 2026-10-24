@@ -13,38 +13,31 @@ using UnityEngine;
     Les changements de densité sont progressifs afin d'éviter des transitions visuelles trop 
     brusques.
 */
+
 public class FogController : MonoBehaviour
 {
+    
     // Référence au gestionnaire du niveau de peur. Permet de récupérer la peur actuelle du joueur.
     public FearManager fearManager;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
 
     // Update is called once per frame
     void Update()
     {
+        if (fearManager == null) return;
+
+        float peur = fearManager.niveauPeur;
         // Densité que le brouillard doit progressivement atteindre.
         float densiteCible;
 
         //PEUR FAIBLE : Le brouillard devient dense afin de réduire la visibilité et renforcer l'ambiance horrifique. 
-        if (fearManager.niveauPeur < 0.3f)
-        {
-            densiteCible = 0.12f;
-        }
+        if (fearManager.niveauPeur < 0.3f) densiteCible = 0.12f;
 
         // PEUR MOYENNE : Le brouillard devient moins dense pour améliorer légérement la visibilité  du joueur.
-        else if (fearManager.niveauPeur < 0.7f)
-        {
-            densiteCible = 0.08f;
-        }
+        else if (fearManager.niveauPeur < 0.7f) densiteCible = 0.08f;
+        
         // PEUR ÉLEVÉE : Le brouillard devient léger pour offir une meilleur visibilité et réduire la tension.
-        else
-        {
-            densiteCible = 0.04f;
-        }
+        else densiteCible = 0.04f;
+        
         // Modifie progressivement la densité actuelle du brouillard vers la densité cible. Mathf.MoveTowards permet une transition fluide. La vitesse de changement est 0.02 par s. Time.deltaTime rend cette transition indépendante du nombre de fps.  
         RenderSettings.fogDensity = Mathf.MoveTowards(
             RenderSettings.fogDensity,

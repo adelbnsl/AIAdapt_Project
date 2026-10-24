@@ -29,7 +29,7 @@ public class DoorController : MonoBehaviour
     public FearManager fearManager;
 
     // Indique si la porte est considérée comme ouverte. Par défaut, elle est fermée.
-    private bool porteOuverte = false;
+    private bool porteOuverte;
 
     // Vitesse de rotation de la porte en degrés/s. Cette valeur est adaptée au niveau de peur.
     public float vitesseOuverture = 60f;
@@ -38,64 +38,34 @@ public class DoorController : MonoBehaviour
     public float angleOuverture = -90f;
 
     // Angle que la porte doit progressivement atteindre. 0 correspond à la position fermée.
-    private float angleCible = 0f;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    private float angleCible;
+
 
     // Update is called once per frame
     void Update()
     {
+
+        if (joueur == null || pivotPorte == null) return;
+        
+        // Vitesse selon le niveau de peur
+        if (fearManager != null)
+        {
+            float peur = fearManager.niveauPeur;
+            if (peur< 0.3f) vitesseOuverture = 90f; // PEUR FAIBLE : La porte s'ouvre et se ferme rapidement avec une vitesse de 90 degrés/s.
+            else if (peur <0.7f) vitesseOuverture = 60f; // PEUR MOYENNE : La porte s'ouvre et se ferme rapidement avec une vitesse de 60 degrés/s.
+            else vitesseOuverture = 30f; // PEUR ÉLEVÉE : La porte s'ouvre et se ferme rapidement avec une vitesse de 30 degrés/s.
+        }
+        
         // Calcule la distance entre le joueur et l'objet portant ce script.
-        float distance = Vector3.Distance(
-            transform.position,
-            joueur.position
-        );
-
-        // PEUR FAIBLE : La porte s'ouvre et se ferme rapidement avec une vitesse de 90 degrés/s.
-        if (fearManager.niveauPeur < 0.3f)
-        {
-            vitesseOuverture = 90f;
-        }
-
-        // PEUR MOYENNE : La porte s'ouvre et se ferme rapidement avec une vitesse de 60 degrés/s.
-        else if (fearManager.niveauPeur < 0.7f)
-        {
-            vitesseOuverture = 60f; 
-        }
-
-        // PEUR ÉLEVÉE : La porte s'ouvre et se ferme rapidement avec une vitesse de 30 degrés/s.
-        else
-        {
-            vitesseOuverture = 30f;
-        }
+        float distance = Vector3.Distance(transform.position, joueur.position);
+        
 
         // Vérifie que le joueur est suffisamment proche et qu'il vient d'appuyer sur la touche E.
         if (distance <= distanceInteraction && Input.GetKeyDown(KeyCode.E))
         {
             Debug.Log("Le joueur intéragit la porte.");
-
-            // Si la porte est fermée, on demande son ouverture.
-            if (porteOuverte == false)
-            {
-
-                // Définit l'angle cible corespondant à la position ouverte.
-                angleCible = angleOuverture;
-
-                // Mémorise que la porte est ouverte.
-                porteOuverte = true;
-            }
-            // Si la porte est ouverte, on commande sa fermeture.
-            else
-            {
-                // Définit l'angle cible correspondant à la position fermée.
-                angleCible = 0f;
-
-                // Mémorise que la porte est fermée.
-                porteOuverte = false;
-            }
+            porteOuverte = !porteOuverte;
+            angleCible = porteOuverte ? angleOuverture : 0f;
         }
 
         // Convertit l'angle cible en rotation Quaternion autour de l'axe vertical Y.
@@ -126,12 +96,9 @@ public class DoorController : MonoBehaviour
     // Méthode publique permettant à un autre script d'ouvrir instantanément la porte sans animation progressive.
     public void OuvrirPorte()
     {
-        // Indique que la porte est fermée.
-        porteOuverte = false;
-
+        porteOuverte = true;
         // Définit l'angle cible de la porte ouverte.
         angleCible = angleOuverture;
-
         // Applique immédiatement la rotation d'ouverture. 
         pivotPorte.localRotation = Quaternion.Euler(0f, angleOuverture, 0f);
     }

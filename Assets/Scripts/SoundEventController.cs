@@ -39,7 +39,7 @@ public class SoundEventController : MonoBehaviour
     public float augmentationPeur = 0.2f;
 
     // Active ou désactive le déclenchement automatique des évènements sonores.
-    public bool declenchementAutomatique = false;
+    public bool declenchementAutomatique;
 
     // Délais minimum et maximum entre les évènements lorsque le niveau de peur est faible.
     public float delaiMinimum = 5f;
@@ -50,7 +50,7 @@ public class SoundEventController : MonoBehaviour
     public float delaiMaximumPeurMoyenne = 20f;
 
     // Chronomètre mesurant le temps écoulé depuis le dernier évènement automatique.    
-    private float chronometre = 0f;
+    private float chronometre;
 
     //Délai aléatoire à atteindre avannt le prochain évènement.
     private float prochainDeclanchement;
@@ -62,6 +62,7 @@ public class SoundEventController : MonoBehaviour
     {
         // Récupère la source audio principale.
         audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) Debug.LogWarning("SoundEventController : aucun AudioSource sur cet objet.");
 
         // Calcule le délair initial avant le 1er évènement. 
         prochainDeclanchement = CalculerDelai();
@@ -167,8 +168,8 @@ public class SoundEventController : MonoBehaviour
         // ÉVÉNEMENT 0 : Joue le son principal et déclenche un clignotement ponctuel de la lumière.
         if (evenement == 0)
         {
-            audioSource.Play();
-            lightController.DeclencherClignotment();
+            if (audioSource != null) audioSource.Play();
+            if (lightController != null) lightController.DeclencherClignotment();
         }
         // ÉVÉNEMENT 1 : Joue un bruit de pas à une position aléatoire derrière le joueur.
         else if (evenement == 1)
