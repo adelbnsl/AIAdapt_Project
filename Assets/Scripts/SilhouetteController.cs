@@ -249,6 +249,10 @@ public class SilhouetteController : MonoBehaviour
         // Augmente et affiche la silhouette.
         silhouetteVisible = true;
         silhouette.SetActive(true);
+        
+        EventCategory cat = EventCategory.Apparition | EventCategory.Entite;
+        if (silhouetteMobile) cat |= EventCategory.Mouvement | EventCategory.Approche;
+        EventBus.Publish("silhouette", cat, 0.7f);
 
         // Augmente la peur du joueur après l'apparition. L'augmentation effective dépend du mode simulationEvenements dans FearManager.
         fearManager.AugmenterPeur(augmentationPeur);

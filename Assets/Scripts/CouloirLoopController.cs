@@ -61,6 +61,7 @@ public class CouloirLoopController : MonoBehaviour
         joueur.rotation = pointRetour.rotation;
         
         nombresBoucles++;
+        EventBus.CurrentLoop = nombresBoucles;
         Debug.Log("Boucle numéro : " + nombresBoucles);
         
         
