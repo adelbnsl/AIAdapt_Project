@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Drawing;
 /* 
     LightController.cs
     Rôle : Gère l'éclairage et le clignotement de la lampe en fonction du niveau de peur 
@@ -10,7 +11,7 @@ using System.Collections;
         - Peur élevée (>= 0.7) : lumière stable pour rassurer le joueur. 
     Le script permet également de déclencher un clignotement ponctuel lors d'un évènement 
     particulier du jeu.
-*/ 
+*/
 
 public class LightController : MonoBehaviour
 {
@@ -19,6 +20,9 @@ public class LightController : MonoBehaviour
     
     //Référence au gestionnaire du niveau de peur. 
     public FearManager fearManager;
+
+    // Référence au matériau lumineux du diffuseur.
+    public Renderer diffuseurLampe;
 
     // Intensité de la lampe lorsqu'elle est allumée.
     public float intensiteNormale = 2f;
@@ -31,6 +35,9 @@ public class LightController : MonoBehaviour
 
     // Seuil à partir duquel est considéré comme faible.
     public float seuilPeurFaible = 0.3f;
+
+    // Indique si l'interrupteur mural autorise l'éclairage. true : la lampe marche nomalement. false : la lampe doit rester éteinte.
+    public bool interrupteurActif = true;
 
     
     // Compteur permettant de mesurer le temps écoulé depuis le dernier changement d'état de la lampe.
@@ -50,6 +57,15 @@ public class LightController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Si l'interrupteur mural est désactivé, la lampe reste éteinte, peu importe le niveau de peur du joueur.
+        if (!interrupteurActif)
+        {
+            lampe.intensity = 0f;
+            lampeAllumee = false;
+            chronometre = 0f;
+            return;
+        }
+
         // Si un clignotement évènementiel est en cours, on suspend de façon temporaire le contrôle habituel.
         if (clignotementEvenementiel)
         {
@@ -90,13 +106,27 @@ public class LightController : MonoBehaviour
             }
         }        
     }
+    // Appelé après Update.
+    void LateUpdate()
+    {
+        SynchroniserDiffuseur();
+    }
+
     // Méthode publique permattant à un autre script de déclancher un clignotement ponctuel.
     public void DeclencherClignotment()
     {
         // Empêche le lancement de plusieurs clignotements évènementiels en même temps.
         if (!clignotementEvenementiel)
         {
-            StartCoroutine(ClignotementPonctuel());
+            if (!interrupteurActif)
+            {
+                return;
+            }
+            if (!clignotementEvenementiel)
+            {
+                StartCoroutine(ClignotementPonctuel());
+            }
+            
         }
     }
 
@@ -115,10 +145,54 @@ public class LightController : MonoBehaviour
         // Attend 0.2s seconde avant de restaurer l'éclairage.
         yield return new WaitForSeconds(0.2f);
 
-        //Restaure l'intensité précédante.
-        lampe.intensity = intensiteInitiale;
+        //Restaure l'intensité précédante seulement si l'interrupteur autorise toujours l'éclairage.
+        if (interrupteurActif)
+        {
+           lampe.intensity = intensiteInitiale; 
+        }
+        else
+        {
+            // Le joueur a éteint la lampe entre-temps : elle doit rester éteinte.
+            lampe.intensity = 0f;
+            lampeAllumee = false;
+        }
 
         // Autorise à nouveau le clignotement habituel.
         clignotementEvenementiel = false;
+    }
+
+    // Synchronise l'apparence du diffuseur avec l'intensité de la lampe.
+    void SynchroniserDiffuseur()
+    {
+        // Vérifie que le diffuseur ou la lampe soient disponible.
+        if (diffuseurLampe == null || lampe == null)
+        {
+            return;
+        }
+        Material materiau = diffuseurLampe.material;
+
+        // Si l'intensité de la lampe n'est pas nulle.
+        if (lampe.intensity > 0f)
+        {
+            // Le diffuseur émet une lumière jaune pâle.
+            materiau.SetColor("_EmissionColor",
+            new UnityEngine.Color(1f, 230f / 255f, 160f / 255f));
+            materiau.SetColor("_BaseColor",
+            new UnityEngine.Color(1f, 241f / 255f, 201f / 255f));
+        }
+        // si l'intensité de la lampe est nulle.
+        else
+        {
+            // Le diffuseur n'émet pas de lumière.
+            materiau.SetColor("_EmissionColor", UnityEngine.Color.black);
+             materiau.SetColor("_BaseColor",
+            new UnityEngine.Color(0.18f, 0.17f, 0.14f));
+        }
+    }
+
+    // Modifie l'état de l'interrupteur mural. La méthode sera appelée par InterrupteurController.
+    public void DefinirEtatInterrupteur(bool nouvelEtat)
+    {
+        interrupteurActif = nouvelEtat;
     }
 }
