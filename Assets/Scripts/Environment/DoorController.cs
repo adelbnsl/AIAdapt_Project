@@ -39,6 +39,20 @@ public class DoorController : MonoBehaviour
 
     // Angle que la porte doit progressivement atteindre. 0 correspond à la position fermée.
     private float angleCible = 0f;
+
+    // Texte affichant la touche E près de la poignée.
+    public GameObject texteInteraction;
+
+    // Point 3D indiquant où afficher la touche E.
+    public Transform pointInteraction;
+
+    // Point d'interaction situé près de la poignée arrière.
+    // Permet d'afficher la touche E du côté où se trouve le joueur.
+    public Transform pointInteractionArriere;
+
+    // Caméra du joueur utilisée pour calculer la position à l'écran.
+    public Camera cameraJoueur;
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -108,6 +122,8 @@ public class DoorController : MonoBehaviour
             vitesseOuverture * Time.deltaTime
         );
 
+        // Actualise la position et la visibilité de la touche E.
+        MettreAJourIndicationInteraction();
     }
 
     // Méthode publique permettant à un autre script de fermer instantanément la porte. Utile lors de la reinitialisation du couloir après une boucle.
@@ -135,4 +151,42 @@ public class DoorController : MonoBehaviour
         // Applique immédiatement la rotation d'ouverture. 
         pivotPorte.localRotation = Quaternion.Euler(0f, angleOuverture, 0f);
     }
-}
+
+    // Met à jour l'indication d'interaction de la porte. Affiche la touche E losque le joueur est suffisamment proche et que le point d'interaction se trouve devant la caméra. Convertit la position 3D de la poignée en coodonnée écran pour que le E suive les mouvement de la caméra et de la porte.
+    void MettreAJourIndicationInteraction()
+    {
+        // Vérifie que les référence nécessaires existent.
+        if (texteInteraction == null || pointInteraction == null || cameraJoueur == null || joueur == null)
+        {
+            return;
+        }
+
+        // Calcule la distance entre le joueur et la porte.
+        float distance = Vector3.Distance(transform.position, joueur.position);
+
+        // Détermine de quel coté de la porte se trouve le joueur. Le calcul utilise l'orientation de la porte même quand elle tourne.
+        Vector3 directionJoueur = joueur.position - transform.position;
+        float coteJoueur = Vector3.Dot(transform.forward, directionJoueur);
+
+        // Selectionne le point correspondant au coté du joueur.
+        Transform pointSelectionne = pointInteraction;
+        if (coteJoueur > 0f && pointInteractionArriere != null)
+        {
+            pointSelectionne = pointInteractionArriere;
+        }
+        // Convertit la position 3D de la poignée en position écran.
+        Vector3 positionEcran = cameraJoueur.WorldToScreenPoint(pointSelectionne.position);
+
+        // Determine si l'indicateur doit apparaître.
+        bool afficher = distance <= distanceInteraction && positionEcran.z > 0f;
+
+        // Afficher ou masquer le E.
+        texteInteraction.SetActive(afficher);
+        if (afficher)
+        {
+            // Place le E près de la poignée à l'écran.
+            RectTransform rectTexte = texteInteraction.GetComponent<RectTransform>();
+            rectTexte.position = positionEcran;
+        }
+    }
+}   

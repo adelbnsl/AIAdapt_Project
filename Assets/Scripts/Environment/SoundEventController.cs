@@ -169,6 +169,9 @@ public class SoundEventController : MonoBehaviour
         {
             audioSource.Play();
             lightController.DeclencherClignotment();
+
+            // Signale qu'un évènement sonore accompagné d'un effet lumineux vient de se produire dans l'environnement du joueur. Les capteurs simulés peuvent génerer une réaction physiologique adaptée aux catégories Son, Lumière.
+            EventBus.Publish("son_clignotement", EventCategory.Son | EventCategory.Lumiere, 0.7f);
         }
         // ÉVÉNEMENT 1 : Joue un bruit de pas à une position aléatoire derrière le joueur.
         else if (evenement == 1)
@@ -178,6 +181,9 @@ public class SoundEventController : MonoBehaviour
             {
                 PositionnerSonDerriereJoueur();
                 audioSourceDerriere.PlayOneShot(sonPas);
+
+                // Public l'évènement sonor pour informer les autres systèmes, notamment les capteurs simulés et le futur modèle utilisateur.
+                EventBus.Publish("son_pas", EventCategory.Son | EventCategory.Derriere, 0.5f);
             }
         }
 
@@ -189,6 +195,9 @@ public class SoundEventController : MonoBehaviour
             {
                 PositionnerSonDerriereJoueur();
                 audioSourceDerriere.PlayOneShot(sonChuchotement);
+
+                // Informe les capteurs et le future modèle utilisateur qu'un chuchotement vient de se produire derrière le joueur.
+                EventBus.Publish("son_chuchotement", EventCategory.Son | EventCategory.Derriere, 0.6f);
             }
         }
     }

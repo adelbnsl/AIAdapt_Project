@@ -82,7 +82,7 @@ public class InterrupteurController : MonoBehaviour
         float distance = Vector3.Distance(transform.position, joueur.position);
 
         // Vérifie si le joueur est assez proche et appuie sur E.
-        if (distance <= distanceInteraction && Input.GetKeyDown(KeyCode.E))
+        if (distance <= distanceInteraction && Input.GetKeyDown(KeyCode.E) && JoueurRegardeInterrupteur())
         {
             // Détermine si l'interrupteur fonctionne correctement.
             if (InterractionEchoue())
@@ -174,7 +174,7 @@ public class InterrupteurController : MonoBehaviour
         Vector3 positionEcran = cameraJoueur.WorldToScreenPoint(pointInteraction.position); 
 
         // Affiche E uniquement si le joueur est assez proche et si le point se trouve devant la caméra.
-        bool afficher = distance <= distanceInteraction && positionEcran.z > 0f;
+        bool afficher = distance <= distanceInteraction && positionEcran.z > 0f && JoueurRegardeInterrupteur();
         texteInteraction.SetActive(afficher);
         if (afficher)
         {
@@ -184,4 +184,22 @@ public class InterrupteurController : MonoBehaviour
         }
     }
 
+    // Retrourne true si l'interrupteur est visé, false sinon.
+    bool JoueurRegardeInterrupteur()
+    {
+        if (cameraJoueur == null)
+        {
+            return false;
+        }
+        // Lance un rayon depuis le centre de la caméra.
+        Ray rayon = new(cameraJoueur.transform.position, cameraJoueur.transform.forward);
+        
+        // Vérifie le premier objet rencontré.
+        if (Physics.Raycast(rayon, out RaycastHit impact, distanceInteraction))
+        {
+            // Accepte la porte et tous ses objets enfants.
+            return impact.transform == transform || impact.transform.IsChildOf(transform);
+        }
+        return false; 
+    }
 }

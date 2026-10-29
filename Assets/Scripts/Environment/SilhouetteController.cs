@@ -264,6 +264,9 @@ public class SilhouetteController : MonoBehaviour
         silhouetteVisible = true;
         silhouette.SetActive(true);
 
+        // Publie l'apparition de la silhouette sur l'EventBus. Cet évènement sera reçu par les capteurs simulés et pourra être exploité par le modèle utilisateur.
+        EventBus.Publish("apparition_sihouette", EventCategory.Apparition | EventCategory.Entite, 0.8f); 
+
         // Augmente la peur du joueur après l'apparition. L'augmentation effective dépend du mode simulationEvenements dans FearManager.
         fearManager.AugmenterPeur(augmentationPeur);
     }
