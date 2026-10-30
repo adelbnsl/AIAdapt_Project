@@ -1789,6 +1789,73 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &771367642
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 771367644}
+  - component: {fileID: 771367643}
+  m_Layer: 0
+  m_Name: UserModel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &771367643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 771367642}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 771edd9fbe95db94da7b0c6856358a06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UserModel
+  sourceCapteur: {fileID: 1329314468}
+  niveauPeurEstime: 0
+  edaActuelle: 0
+  bpmActuel: 0
+  edaRepos: 2
+  bpmRepos: 70
+  activationEDA: 0
+  activationBPM: 0
+  poidsEDA: 0.6
+  poidsBPM: 0.6
+  activationGlobale: 0
+  vitesseLissage: 2
+  activationLisse: 0
+  dernierEvenement: Aucun
+  tempsDernierEvenenement: -1
+  tempsDepuisEvenement: -1
+  activationAvantEvenement: 0
+  variationActivation: 0
+  picVariationActivation: 0
+  "dur\xE9eObservation": 6
+  historiqueReactions: []
+  amplitudeReferenceEDA: 3
+  amplitudeReferenceBPM: 25
+--- !u!4 &771367644
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 771367642}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.26142, y: 0.87713, z: 3.76727}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &779456534
 GameObject:
   m_ObjectHideFlags: 0
@@ -3293,6 +3360,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1225870205
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1225870207}
+  - component: {fileID: 1225870206}
+  m_Layer: 0
+  m_Name: SensorDebugUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1225870206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1225870205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5820e181eede52145921844cbf4b1dbe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SensorDebugOverlay
+  sourceCapteur: {fileID: 1329314468}
+  visible: 1
+--- !u!4 &1225870207
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1225870205}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.26142, y: 0.87713, z: 3.76727}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1236918287
 GameObject:
   m_ObjectHideFlags: 0
@@ -3666,6 +3779,70 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.82, y: 1.2, z: 7.2}
   m_LocalScale: {x: 0.14, y: 2.4, z: 0.22}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1329314467
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1329314469}
+  - component: {fileID: 1329314468}
+  m_Layer: 0
+  m_Name: SensorManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1329314468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1329314467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce4a448f0488d2f42877c223fbbca300, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SimulatedSensorSource
+  edaRepos: 2
+  bpmRepos: 70
+  gainEda: 3
+  gainBpm: 25
+  latenceEda: 1.5
+  constanteEda: 4
+  latenceBpm: 0.5
+  constanteBpm: 6
+  lissage: 0.5
+  bruitEda: 0.05
+  bruitBpm: 1.5
+  facteurSensibilite: 1
+  sensibiliteSon: 0.8
+  sensibiliteLumiere: 0.2
+  sensibiliteObscurite: 0.3
+  sensibiliteApparition: 0.9
+  sensibiliteEntite: 0.5
+  sensibiliteMouvement: 0.4
+  sensibiliteDerriere: 0.6
+  sensibiliteApproche: 0.5
+--- !u!4 &1329314469
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1329314467}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.26142, y: 0.87713, z: 3.76727}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -7108,3 +7285,6 @@ SceneRoots:
   - {fileID: 980854063}
   - {fileID: 1541517583}
   - {fileID: 1426661520}
+  - {fileID: 1329314469}
+  - {fileID: 1225870207}
+  - {fileID: 771367644}
