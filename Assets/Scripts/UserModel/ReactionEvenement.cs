@@ -20,6 +20,9 @@ public class ReactionEvenement
     // Identifiant du stimulus horrifique observé.
     public string idEvenement;
 
+    // Categorie(s) de l'évènement horrifique provoquant cette observation physiologique.
+    public EventCategory categoriesEvenement;
+
     // Istant Unity auquel l'évènement s'est produit.
     public float tempsEvenement;
 

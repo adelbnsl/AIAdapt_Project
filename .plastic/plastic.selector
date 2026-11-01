@@ -1,0 +1,4 @@
+repository "AIAdapt_Horror 2026-10-14_14-57-36/AIAdapt_Horror@20067449621225@cloud"
+  path "/"
+    br "/main"
+    co "/main"

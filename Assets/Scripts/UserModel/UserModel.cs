@@ -84,6 +84,9 @@ public class UserModel : MonoBehaviour
     // Identifiant du dernier évènement horrifique reçu. Permet de connaître le stimulus le plus récent.
     public string dernierEvenement = "Aucun";
 
+    // Categorie(s) du dernier évènement horrifique reçu. Cette information sera conservée dans l'historique pour construire le profil de sensibilité du joueur.
+    public EventCategory categoriesDernierEvenement;
+
     // Temps Unity auquel le dernier évènement a été reçu. Sers à analyser les réactions physiologiques après un stimulus. -1 signifie qu'aucun évènement n'a été reçu.
     public float tempsDernierEvenenement = -1f;
 
@@ -108,6 +111,13 @@ public class UserModel : MonoBehaviour
 
     // Historique des réactions physiologique du joueur. Chaque élement correspond à une occurence d'un évènement horrifique et aux mesures observées après cet évènement. Cette liste permet de construre progressivement un profil de sensibilité aux différents stimulis.
     public List<ReactionEvenement> historiqueReactions = new List<ReactionEvenement>();
+
+    // Profil de sensibilité physiologique du joueur. Chaque élement correspond à une catégorie d'évènemenns horrifiques et contient les indicateurs calculés à partir des réactions potentiellement exploitables.
+    // Cette liste permettra au système d'adaptation de connaître les catégories auxquelle le joueur réagit le plus.
+    public List<SensibiliteCategorie> profilSensibilites = new List<SensibiliteCategorie>();
+
+    // Nombre de réactions enrengistrées dans l'historique qui respectent les critères initaux d'exploitation. Cette valeur est actualisée après chaque enrengistrement.
+    public int nombreReactionExploitables = 0;
 
     // Indique si une fenêtre d'observation physiologique est en cours. Cette variable permet de détecter la fin d'une observation et d'éviter de traiter plusieurs fois le même évènement.
     public bool observationEnCours = false;
@@ -135,7 +145,10 @@ public class UserModel : MonoBehaviour
         if (capteur == null)
         {
             Debug.LogError("UserModel : Aucune source de capteurs valide n'est assignée.");
-        }   
+        }
+
+        // Prépare les défférentes catégories du profil utilisateur.
+        InitialiserProfilSensibilites();   
     }
 
     // Update is called once per frame
@@ -209,6 +222,7 @@ public class UserModel : MonoBehaviour
             ReactionEvenement reaction = new ReactionEvenement();
             reaction.idEvenement = dernierEvenement;
             reaction.tempsEvenement = tempsDernierEvenenement;
+            reaction.categoriesEvenement = categoriesDernierEvenement;
             reaction.activationInitiale = activationAvantEvenement;
             reaction.picActivation = picVariationActivation;
             reaction.dureeObservation = tempsDepuisEvenement;
@@ -221,6 +235,8 @@ public class UserModel : MonoBehaviour
             historiqueReactions.Add(reaction);
 
             Debug.Log("UserModel : Observation terminée pour " + dernierEvenement + " | Pic d'activation : " + picVariationActivation + " | Isolée : " + reaction.reactionIsolee);
+            
+            CompterReactionsExploitables();
         }
     }
 
@@ -233,6 +249,7 @@ public class UserModel : MonoBehaviour
             ReactionEvenement reactionInterrompue = new ReactionEvenement();
             reactionInterrompue.idEvenement = dernierEvenement;
             reactionInterrompue.tempsEvenement = tempsDernierEvenenement;
+            reactionInterrompue.categoriesEvenement = categoriesDernierEvenement;
             reactionInterrompue.activationInitiale = activationAvantEvenement;
             reactionInterrompue.picActivation = picVariationActivation;
             reactionInterrompue.dureeObservation = Mathf.Max(0f, evenement.temps - tempsDernierEvenenement);
@@ -241,12 +258,14 @@ public class UserModel : MonoBehaviour
             reactionInterrompue.reactionIsolee = false;
             reactionInterrompue.observationInterrompue = true;
             historiqueReactions.Add(reactionInterrompue);
+            CompterReactionsExploitables();
         }
         // Verifie si le nouvel évènement interrompt une observation qui n'est pas encore terminée.
         bool evenementChevauchant = observationEnCours;
 
         // Enrengistre le nouvel évènement.
         dernierEvenement = evenement.id;
+        categoriesDernierEvenement = evenement.categories;
         tempsDernierEvenenement = evenement.temps;
 
         // Mémorise l'activation physiologique actuelle.
@@ -272,5 +291,50 @@ public class UserModel : MonoBehaviour
     void OnDisable()
     {
         EventBus.OnEvent -= RecevoirEvenement;
+    }
+
+    // Parcout l'historique des réactions physiologiques et compte celles qui respectent les critères définis par la méthode EstExploitable.
+    void CompterReactionsExploitables()
+    {
+        nombreReactionExploitables = 0;
+        foreach(ReactionEvenement reaction in historiqueReactions)
+        {
+            if (reaction != null && reaction.EstExploitable())
+            {
+                nombreReactionExploitables++;
+            }
+        }
+    }
+
+    /* 
+        Initialise le profil de sensibilité du joueur.
+        Fonctionnement :
+            - Vide les anciennes entrées du profils.
+            - Parcourt les catégories définies dans EventCategory.
+            - Crée une entrée SensibiliteCategorie pour chaque catégorie élémentaire.
+            - Initialise les indicateurs à 0.
+        Remarques : EventCategory utilise des flags. Nous ignorons dont les valeurs None et les éventuelles combinaisons de plusieurs catégories.
+    */
+
+    void InitialiserProfilSensibilites()
+    {
+        profilSensibilites.Clear();
+        foreach(EventCategory categorie in Enum.GetValues(typeof(EventCategory)))
+        {
+            int valeur = (int)categorie;
+
+            // Vérifie que la catégorie correspond à un seul flag.
+            if (valeur == 0 || (valeur & (valeur - 1)) != 0)
+            {
+                continue;
+            }
+            SensibiliteCategorie sensibilite = new SensibiliteCategorie();
+
+            sensibilite.categorie = categorie;
+            sensibilite.nombreReactions = 0;
+            sensibilite.activationMoyenne = 0f;
+
+            profilSensibilites.Add(sensibilite);
+        }
     }
 }

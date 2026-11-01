@@ -1832,6 +1832,7 @@ MonoBehaviour:
   vitesseLissage: 2
   activationLisse: 0
   dernierEvenement: Aucun
+  categoriesDernierEvenement: 0
   tempsDernierEvenenement: -1
   tempsDepuisEvenement: -1
   activationAvantEvenement: 0
@@ -1839,6 +1840,10 @@ MonoBehaviour:
   picVariationActivation: 0
   "dur\xE9eObservation": 6
   historiqueReactions: []
+  profilSensibilites: []
+  nombreReactionExploitables: 0
+  observationEnCours: 0
+  observationPertubee: 0
   amplitudeReferenceEDA: 3
   amplitudeReferenceBPM: 25
 --- !u!4 &771367644
@@ -3554,7 +3559,7 @@ MonoBehaviour:
   sonChuchotement: {fileID: 8300000, guid: 8b39d994eabf28a40aef149089e7b47d, type: 3}
   lightController: {fileID: 1794671621}
   augmentationPeur: 0.2
-  declenchementAutomatique: 1
+  declenchementAutomatique: 0
   delaiMinimum: 5
   delaiMaximum: 10
   delaiMinimumPeurMoyenne: 12
