@@ -2,6 +2,7 @@ using System;
 using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 /* 
     UserModel.cs
     Rôle : Représente le modèle utilisateur du Projet. Son objectif est d'estimer le niveau de peur du joueur à partir des données physiologiques provenant des capteurs.
@@ -116,6 +117,24 @@ public class UserModel : MonoBehaviour
     // Cette liste permettra au système d'adaptation de connaître les catégories auxquelle le joueur réagit le plus.
     public List<SensibiliteCategorie> profilSensibilites = new List<SensibiliteCategorie>();
 
+    // Catégorie d'évènements associée à la plus forte activation physiologique moyenne du joueur.
+    public EventCategory categoriePlusForteActivation = (EventCategory)0;
+
+    // Valeur de l'activation moyenne de cette catégorie. Compris entre 0 et 1.
+    [UnityEngine.Range(0f, 1f)]
+    public float plusForteActivationMoyenne = 0f;
+
+    // Catégorie d'évènements associée à la plus faible activation physiologique moyenne du joueur.
+    public EventCategory categoriePlusFaibleActivation = (EventCategory)0;
+
+    // Valeur de l'activation moyenne de cette catégorie. Compris entre 0 et 1.
+    [UnityEngine.Range(0f, 1f)]
+    public float plusFaibleActivationMoyenne = 0f;
+
+    // Nombre minimal de réactions exploitables nécessaires pour prendre en compte une catégorie dans la comparaison des activations physiologiques moyennes. Ce seuil est provisoire et pourra être ajusté après évaluation.
+    [Min(1)]
+    public int nombreMinimuReactions = 3;
+
     // Nombre de réactions enrengistrées dans l'historique qui respectent les critères initaux d'exploitation. Cette valeur est actualisée après chaque enrengistrement.
     public int nombreReactionExploitables = 0;
 
@@ -154,12 +173,40 @@ public class UserModel : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // TEST TEMPORAIRE : vérifie la touche T
+        // avec le nouveau Input System.
+        if (Keyboard.current != null && Keyboard.current.tKey.wasPressedThisFrame)
+        {
+            Debug.Log("TEST : T détectée avec le nouveau Input System !");
+
+            EventBus.Publish(
+                "test_categories",
+                EventCategory.Son | EventCategory.Derriere,
+                0.5f
+            );
+        }
+
+        // TEST TEMPORAIRE : déclenche un événement
+        // appartenant aux catégories Apparition et Entite.
+        if (Keyboard.current != null && Keyboard.current.yKey.wasPressedThisFrame)
+        {
+            Debug.Log("TEST : Événement Apparition déclenché !");
+
+            EventBus.Publish(
+                "test_apparition",
+                EventCategory.Apparition | EventCategory.Entite,
+                0.8f
+            );
+}
+        
+        
         // Verifie que la source des capteurs est disponible.
         if (capteur == null)
         {
             return;
         }
         
+
         // Récupère les dernières mesures physiologiques.
         SensorSample mesures = capteur.Lire();
 
@@ -237,6 +284,9 @@ public class UserModel : MonoBehaviour
             Debug.Log("UserModel : Observation terminée pour " + dernierEvenement + " | Pic d'activation : " + picVariationActivation + " | Isolée : " + reaction.reactionIsolee);
             
             CompterReactionsExploitables();
+            ActualiserProfilSensibilites();
+            IdentifierCategoriePlusForteActivation();
+            IdentifierCategoriePlusFaibleActivation();
         }
     }
 
@@ -259,6 +309,9 @@ public class UserModel : MonoBehaviour
             reactionInterrompue.observationInterrompue = true;
             historiqueReactions.Add(reactionInterrompue);
             CompterReactionsExploitables();
+            ActualiserProfilSensibilites();
+            IdentifierCategoriePlusForteActivation();
+            IdentifierCategoriePlusFaibleActivation();
         }
         // Verifie si le nouvel évènement interrompt une observation qui n'est pas encore terminée.
         bool evenementChevauchant = observationEnCours;
@@ -335,6 +388,100 @@ public class UserModel : MonoBehaviour
             sensibilite.activationMoyenne = 0f;
 
             profilSensibilites.Add(sensibilite);
+        }
+    }
+
+     
+    // Actualise le nombre de réactions exploitables pour chaque catégorie du profil utilisateur. Une réaction peut contribuer à plusieurs catégories puisque EventCategory utilise des flags.
+    void ActualiserProfilSensibilites()
+    {
+        // Réinitialise les compteurs du profil. 
+        foreach(SensibiliteCategorie sensibilite in profilSensibilites)
+        {
+            sensibilite.nombreReactions = 0;
+            sensibilite.activationMoyenne = 0f;
+        }
+
+        // Parcourt toutes les reactions enrengistrées.
+        foreach(ReactionEvenement reaction in historiqueReactions)
+        {
+            // Ignore les réactions absentes ou non exploitables.
+            if (reaction == null || !reaction.EstExploitable())
+            {
+                continue;
+            }
+
+            // Vérifie chaque catégorie du profil.
+            foreach(SensibiliteCategorie sensibilite in profilSensibilites)
+            {
+                // Vérifie si la réaction possède cette catégorie.
+                if((reaction.categoriesEvenement & sensibilite.categorie) == sensibilite.categorie)
+                {
+                    sensibilite.nombreReactions++;
+                    sensibilite.activationMoyenne += reaction.picActivation;
+                }
+            }
+        } 
+
+        // Calcule l'activation moyenne pour chaque catégorie.
+        foreach(SensibiliteCategorie sensibilite in profilSensibilites)
+        {
+            // Evite une division par 0 si aucun réaction exploitable n'as été enrengistrée pour cette catégorie.
+            if (sensibilite.nombreReactions > 0)
+            {
+                sensibilite.activationMoyenne /= sensibilite.nombreReactions;
+            }
+        }
+    }
+
+    // Identifie la catégorie d'évènements associée à la plus forte activation physiologique moyenne du joueur. Si plusieurs catégories possèdent exactement la même activation moyenne, la 1ère rencontrée est conservée.
+    void IdentifierCategoriePlusForteActivation()
+    {
+        // Réinitialise les résultats.
+        categoriePlusForteActivation = (EventCategory)0;
+        plusForteActivationMoyenne = 0f;
+
+        // Parcourt les catégories du profil utilisateur.
+        foreach(SensibiliteCategorie sensibilite in profilSensibilites)
+        {
+            // Ignore les catégories qui ne possèdent pas suffisamment de réactions exploitables.
+            if(sensibilite.nombreReactions < nombreMinimuReactions)
+            {
+                continue;
+            }
+
+            // Vérifie si cette catégorie possède une activation moyenne supérieure à la meilleure valeur actuelle.
+            if (categoriePlusForteActivation == (EventCategory)0 || sensibilite.activationMoyenne > plusForteActivationMoyenne)
+            {
+                categoriePlusForteActivation = sensibilite.categorie;
+                plusForteActivationMoyenne = sensibilite.activationMoyenne;
+            }
+        }
+    }
+
+    // Identifie la catégorie d'évènements associée à la plus faible activation physiologique moyenne du joueur. Le seuil minimal est défini par nombreMinimuReactions. En cas d'égalité, la 1ère catégorie rencontrée est conservée. Une faible activation ne sigifie pas nécessairement une absence de peur.
+    void IdentifierCategoriePlusFaibleActivation()
+    {
+        // Rénitialise les résultats. 
+        categoriePlusFaibleActivation = (EventCategory)0;
+        plusFaibleActivationMoyenne = 0f;
+
+        // Parcout les catégories du profil utilisateur.
+        foreach(SensibiliteCategorie sensibilite in profilSensibilites)
+        {
+            // Ignore les catégories qui ne possèdent pas suffisamment de réactions exploitables.
+            if(sensibilite.nombreReactions < nombreMinimuReactions)
+            {
+                continue;
+            }
+
+            // Sélectionne la 1ère catégorie admissible ou une catégorie ayant une activation moyenne plus faible.
+            if(categoriePlusFaibleActivation == (EventCategory)0 || sensibilite.activationMoyenne < plusFaibleActivationMoyenne)
+            {
+                categoriePlusFaibleActivation = sensibilite.categorie;
+                plusFaibleActivationMoyenne = sensibilite.activationMoyenne;
+            }
+
         }
     }
 }
