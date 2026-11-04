@@ -131,6 +131,19 @@ public class UserModel : MonoBehaviour
     [UnityEngine.Range(0f, 1f)]
     public float plusFaibleActivationMoyenne = 0f;
 
+    // Différence entre la plus forte et plus faible activation physiologique moyenne du profil utilisateur. Une valeur proche de 0 montre des moyennes similaires. Une valeur élevée indique un écart plus important. Cet indicateur ne représente pas directement une différence de peur ressentie.
+    [UnityEngine.Range(0f, 1f)]
+    public float ecartActivationMoyenne = 0f;
+
+    // Indique si le profil utilisateur possède au moins 2 catégories distinctes ayant atteint le nombre minimum de réactions exploitables. Cette variable permet de savoir si une comparaison entre catégorie est possible. Elle ne garantit pas à elle seule la fiabilaté statistique des résultats obtenus.
+    public bool comparaisonCategoriePossible = false;
+
+    // Indique si le profil utilisateur contient suffisamement de réactions exploitables provenant d'au moins 2 évènements horrifiques différents. Cela complète comparaisonCategoriesPossible. Elle évite de considérer plusieurs categorie associées aux mêmes évènements comme une comparaison suffisamment diversifiées.
+    public bool evenementsDiversifies = false; 
+
+    // Indique si le profil utilisateur satisfait les conditions minimales pour être exploité par le futur système d'adaptions. Un profil prêt ne garantit pas que les réactions mesurée correspondent directement à la peur. Et ne garantit pas non plus la fiabilité statistique du profil.
+    public bool profilPretPourAdaptation = false;
+
     // Nombre minimal de réactions exploitables nécessaires pour prendre en compte une catégorie dans la comparaison des activations physiologiques moyennes. Ce seuil est provisoire et pourra être ajusté après évaluation.
     [Min(1)]
     public int nombreMinimuReactions = 3;
@@ -287,6 +300,10 @@ public class UserModel : MonoBehaviour
             ActualiserProfilSensibilites();
             IdentifierCategoriePlusForteActivation();
             IdentifierCategoriePlusFaibleActivation();
+            CalculerEcartActivationMoyenne();
+            VerifierComparaisonCategories();
+            VerifierDiversiteEvenements();
+            VerifierProfilPretPourAdaptation();
         }
     }
 
@@ -312,6 +329,10 @@ public class UserModel : MonoBehaviour
             ActualiserProfilSensibilites();
             IdentifierCategoriePlusForteActivation();
             IdentifierCategoriePlusFaibleActivation();
+            CalculerEcartActivationMoyenne();
+            VerifierComparaisonCategories();
+            VerifierDiversiteEvenements();
+            VerifierProfilPretPourAdaptation();
         }
         // Verifie si le nouvel évènement interrompt une observation qui n'est pas encore terminée.
         bool evenementChevauchant = observationEnCours;
@@ -483,5 +504,85 @@ public class UserModel : MonoBehaviour
             }
 
         }
+    }
+
+    // Calcule l'écart entre la plus forte et plus faible activation physiologique moyenne du profil utilisateur. Un écart nul peut signifier que les catégories admissibles possèdent la même moyenne. Ou également peut signifier qu'aucune catégorie n'as atteint le seuil minimal. Cet écart ne mesure pas directement la peur.
+    void CalculerEcartActivationMoyenne()
+    {
+        // Vérifie qu'une catégorie admisible a été identifiée.
+        if(categoriePlusForteActivation == (EventCategory)0 || categoriePlusFaibleActivation == (EventCategory)0)
+        {
+            ecartActivationMoyenne = 0f;
+            return;
+        }
+
+        // Calcule la différence entre les activations moyennes extrêmes.
+        ecartActivationMoyenne = Mathf.Clamp01( plusForteActivationMoyenne - plusFaibleActivationMoyenne);
+    }
+
+    // Vérifie si le profil utilisateur permet de comparer au moins 2 catégories d'évènements. Le seuil est défini par nombreMinimumReactions. Les catégories peuvent partager les mêmes évènements. Cet indicateur ne garantit pas la fialbilité statistique du profil utilisateur.
+    void VerifierComparaisonCategories()
+    {
+        // Nombre de catégories ayant suffisamment de réactions.
+        int nombreCategoriesAdmissibles = 0;
+
+        // Parcourt toutes les categories du profil.
+        foreach(SensibiliteCategorie sensibilite in profilSensibilites)
+        {
+            // Vérifie si la catégorie atteint le seuil minimum.
+            if(sensibilite.nombreReactions >= nombreMinimuReactions)
+            {
+                nombreCategoriesAdmissibles++;
+            }
+        }
+
+        // La comparaison est possible si au moins 2 catégories ont atteint le seuil.
+        comparaisonCategoriePossible = nombreCategoriesAdmissibles >= 2;
+    }
+
+    // Vérifie si le profil utilisateur contient des réactions exploitable provenant d'au moins 2 types d'évènements horrifiques différents. 2 évènements ayant le même identifiant sont considérées comme appartenant au même type. Le seuil défini par nombreMinimuReactions. La diversité des identifiants ne garantit pas l'indépendance statistique des observations.
+    void VerifierDiversiteEvenements()
+    {
+        // Associe chaque identifiant d'évènement au nombre de réactions exploitables correspondantes.
+        Dictionary<string, int> nombreReactionParEvenement = new Dictionary<string, int>();
+
+        // Parcourt toutes les réactions enrengistrées.
+        foreach(ReactionEvenement reaction in historiqueReactions)
+        {
+            // Ignore les reaction non exploitables.
+            if(!reaction.EstExploitable())
+            {
+                continue;
+            }
+            
+            // Ajoute l'identifiant s'il n'existe pas encore. 
+            if(!nombreReactionParEvenement.ContainsKey(reaction.idEvenement))
+            {
+                nombreReactionParEvenement[reaction.idEvenement] = 0;
+            }
+
+            // Incrémente le nombre de réactions pour cet évènement
+            nombreReactionParEvenement[reaction.idEvenement]++;
+        }
+
+        // Compte les types d'évènements ayant atteint le seuil.
+        int nombreTypesAdmissibles = 0;
+        foreach(int nombreReactions in nombreReactionParEvenement.Values)
+        {
+            if (nombreReactions >= nombreMinimuReactions)
+            {
+                nombreTypesAdmissibles++;
+            }
+        }
+        
+        // La diversité est validée si au moins 2 types d'évènements différents ont atteint le seuil.
+        evenementsDiversifies = nombreTypesAdmissibles >= 2;
+    }
+
+    // Vérifie si le profil utilisateur satisfait les conditions minimales pour être exploité par le système d'adaptation. Un profil prêt ne garantit pas une fiabilite statistique suffisante. L'activation physiologique ne correspond pas directement à la peur ressentie. Cela ne déclenche aucune adaptation.
+    void VerifierProfilPretPourAdaptation()
+    {
+        // Le profil est prêt uniquement si les deux conditions minimales sont satisfaites.
+        profilPretPourAdaptation = comparaisonCategoriePossible && evenementsDiversifies;
     }
 }
