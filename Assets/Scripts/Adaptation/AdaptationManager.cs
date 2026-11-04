@@ -13,7 +13,7 @@ using UnityEngine;
         - Les décisions d'adaptations seront ajoutées progressivement et testées séparément. 
 */
 
-public class AdaptionManager : MonoBehaviour
+public class AdaptationManager : MonoBehaviour
 {
     // Référence au modèle utilisateur.
     public UserModel userModel;
